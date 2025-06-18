@@ -1,36 +1,198 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🐾 Pet Connect - Frontend
 
-## Getting Started
+Frontend moderno para a plataforma Pet Connect, desenvolvido com Next.js 14, TypeScript e Tailwind CSS.
 
-First, run the development server:
+## 🚀 Tecnologias
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Next.js 14** - React framework com App Router
+- **TypeScript** - Tipagem estática
+- **Tailwind CSS** - Framework CSS utilitário
+- **Shadcn/ui** - Componentes UI modernos
+- **Zustand** - Gerenciamento de estado
+- **Axios** - Cliente HTTP
+- **React Hook Form** - Formulários performáticos
+- **Zod** - Validação de esquemas
+- **Lucide React** - Ícones modernos
+
+## 🏗️ Arquitetura
+
+O projeto segue os princípios da **Clean Architecture** adaptada para frontend:
+
+```
+src/
+├── app/                    # App Router Next.js 14
+│   ├── (auth)/            # Grupo de rotas de autenticação
+│   ├── admin/             # Dashboard administrativo
+│   ├── lojista/           # Dashboard do lojista
+│   ├── veterinario/       # Dashboard do veterinário
+│   └── tutor/             # Dashboard do tutor
+├── components/            # Componentes reutilizáveis
+│   └── ui/               # Componentes base (shadcn/ui)
+├── domain/               # Entidades e tipos de negócio
+│   ├── entities/         # Modelos de dados
+│   └── types/           # Definições de tipos
+├── infrastructure/       # Adapters externos
+│   ├── api/             # Serviços de API
+│   └── storage/         # Armazenamento local
+├── application/          # Lógica de aplicação
+│   ├── stores/          # Stores Zustand
+│   ├── services/        # Serviços de negócio
+│   └── usecases/        # Casos de uso
+└── shared/              # Utilitários compartilhados
+    ├── utils/           # Funções utilitárias
+    ├── hooks/           # Hooks customizados
+    └── constants/       # Constantes da aplicação
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🎯 Funcionalidades Implementadas
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### ✅ Autenticação
+- [x] Página de login responsiva
+- [x] Registro por tipo de usuário
+- [x] Validação de formulários
+- [x] Gerenciamento de estado de autenticação
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### ✅ Dashboards por Perfil
+- [x] **Tutor**: Busca de produtos e serviços
+- [ ] **Lojista**: CRUD de produtos
+- [ ] **Veterinário**: CRUD de serviços
+- [ ] **Admin**: Gestão de usuários
 
-## Learn More
+### ✅ Interface
+- [x] Landing page moderna
+- [x] Design responsivo
+- [x] Componentes reutilizáveis
+- [x] Sistema de cores consistente
 
-To learn more about Next.js, take a look at the following resources:
+## 🚀 Como Executar
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Pré-requisitos
+- Node.js 18+ 
+- npm ou yarn
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Instalação
+```bash
+# Clone o repositório
+git clone <url-do-repositorio>
+cd petconnect-frontend
 
-## Deploy on Vercel
+# Instale as dependências
+npm install
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# Configure as variáveis de ambiente
+cp .env.example .env.local
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# Execute o servidor de desenvolvimento
+npm run dev
+```
+
+### Scripts Disponíveis
+```bash
+npm run dev          # Servidor de desenvolvimento
+npm run build        # Build para produção
+npm run start        # Servidor de produção
+npm run lint         # Linting com ESLint
+npm run type-check   # Verificação de tipos
+```
+
+## 🌐 Variáveis de Ambiente
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8080
+NEXT_PUBLIC_APP_NAME=Pet Connect
+```
+
+## 📱 Páginas Principais
+
+### Públicas
+- `/` - Landing page
+- `/login` - Página de login
+- `/register` - Página de registro
+
+### Privadas (requer autenticação)
+- `/tutor/dashboard` - Dashboard do tutor
+- `/lojista/dashboard` - Dashboard do lojista
+- `/veterinario/dashboard` - Dashboard do veterinário
+- `/admin/dashboard` - Dashboard administrativo
+
+## 🎨 Design System
+
+### Cores Principais
+- **Primary**: Blue 600 (#2563eb)
+- **Secondary**: Gray 600 (#4b5563)
+- **Success**: Green 600 (#059669)
+- **Warning**: Yellow 600 (#d97706)
+- **Error**: Red 600 (#dc2626)
+
+### Tipografia
+- **Fonte Principal**: Inter
+- **Fonte Mono**: JetBrains Mono
+
+## 🔧 Configuração do Backend
+
+O frontend se conecta com a API REST do backend Pet Connect:
+- **URL Base**: `http://localhost:8080`
+- **Documentação**: Veja o README do backend
+
+## 📦 Próximas Implementações
+
+### 🎯 Funcionalidades Prioritárias
+- [ ] Dashboards específicos para cada tipo de usuário
+- [ ] Sistema de upload de imagens
+- [ ] Filtros avançados de busca
+- [ ] Sistema de favoritos
+- [ ] Chat em tempo real
+- [ ] Notificações push
+
+### 🔧 Melhorias Técnicas
+- [ ] Testes unitários com Jest
+- [ ] Testes E2E com Playwright
+- [ ] Storybook para componentes
+- [ ] Internacionalização (i18n)
+- [ ] PWA (Progressive Web App)
+- [ ] Otimização de performance
+
+## 👥 Estrutura de Usuários
+
+### Tutor (Pet Owner)
+- Busca produtos e serviços
+- Visualiza detalhes e avaliações
+- Agenda consultas veterinárias
+
+### Lojista (Store Owner)
+- Gerencia catálogo de produtos
+- Visualiza estatísticas de vendas
+- Controla estoque
+
+### Veterinário
+- Gerencia serviços oferecidos
+- Agenda consultas
+- Visualiza histórico de pacientes
+
+### Administrador
+- Supervisiona toda a plataforma
+- Gerencia usuários
+- Visualiza métricas globais
+
+## 🤝 Contribuição
+
+1. Fork o projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
+
+## 📄 Licença
+
+Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+
+## 📞 Suporte
+
+Para suporte e dúvidas:
+- 📧 Email: suporte@petconnect.com
+- 💬 Chat: Disponível na plataforma
+- 📖 Documentação: [docs.petconnect.com](https://docs.petconnect.com)
+
+---
+
+Desenvolvido com ❤️ para o mundo pet 🐾
