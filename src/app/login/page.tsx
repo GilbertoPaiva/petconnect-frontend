@@ -8,10 +8,11 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Heart, Eye, EyeOff } from 'lucide-react';
 import { useAuthStore } from '@/application/stores/useAuthStore';
+import { UserType } from '@/domain/types';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, isLoading } = useAuthStore();
+  const { login, isLoading, user } = useAuthStore();
   
   const [formData, setFormData] = useState({
     email: '',
@@ -27,28 +28,34 @@ export default function LoginPage() {
     try {
       await login(formData);
       
-      // Redirecionar baseado no tipo de usuário será feito no store
-      // Por enquanto, vamos usar mock para mostrar funcionalidade
-      const mockUserType = formData.email.includes('admin') ? 'ADMIN' : 
-                          formData.email.includes('vet') ? 'VETERINARIO' :
-                          formData.email.includes('loja') ? 'LOJISTA' : 'TUTOR';
-      
-      switch (mockUserType) {
-        case 'ADMIN':
-          router.push('/admin/dashboard');
-          break;
-        case 'VETERINARIO':
-          router.push('/veterinario/dashboard');
-          break;
-        case 'LOJISTA':
-          router.push('/lojista/dashboard');
-          break;
-        case 'TUTOR':
-        default:
+      // Aguardar um tick para o store ser atualizado
+      setTimeout(() => {
+        const currentUser = useAuthStore.getState().user;
+        if (currentUser) {
+          // Redirecionar baseado no tipo de usuário
+          switch (currentUser.userType) {
+            case UserType.ADMIN:
+              router.push('/admin/dashboard');
+              break;
+            case UserType.VETERINARIO:
+              router.push('/veterinario/dashboard');
+              break;
+            case UserType.LOJISTA:
+              router.push('/lojista/dashboard');
+              break;
+            case UserType.TUTOR:
+            default:
+              router.push('/tutor/dashboard');
+              break;
+          }
+        } else {
+          // Fallback para tutor se não conseguir identificar o tipo
           router.push('/tutor/dashboard');
-          break;
-      }
+        }
+      }, 100);
+      
     } catch (err: any) {
+      console.error('Login error:', err);
       setError(err.message || 'Erro ao fazer login. Verifique suas credenciais.');
     }
   };
@@ -161,6 +168,17 @@ export default function LoginPage() {
                   Cadastre-se
                 </Link>
               </p>
+            </div>
+
+            {/* Para fins de teste - pode ser removido em produção */}
+            <div className="mt-4 p-3 bg-blue-50 rounded-md">
+              <p className="text-xs text-blue-600 font-medium mb-2">Contas de teste:</p>
+              <div className="text-xs text-blue-600 space-y-1">
+                <div>Admin: admin@test.com / 123456</div>
+                <div>Veterinário: vet@test.com / 123456</div>
+                <div>Lojista: loja@test.com / 123456</div>
+                <div>Tutor: tutor@test.com / 123456</div>
+              </div>
             </div>
           </CardContent>
         </Card>

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Integração - Pet Connect</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .log {
+            background: #000;
+            color: #00ff00;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+    </style>
+</head>
+<body>
+    <h1>🐾 Pet Connect - Teste de Integração</h1>
+    
+    <div class="container">
+        <h2>🔧 Testes Automatizados</h2>
+        <button onclick="testBackendConnection()">Testar Conexão Backend</button>
+        <button onclick="testUserRegistration()">Testar Cadastro de Usuário</button>
+        <button onclick="testUserLogin()">Testar Login (Simulado)</button>
+        <button onclick="clearLog()">Limpar Log</button>
+    </div>
+
+    <div class="container">
+        <h2>📊 Resultado dos Testes</h2>
+        <div id="log" class="log">🚀 Sistema pronto para testes...\n</div>
+    </div>
+
+    <script>
+        const log = document.getElementById('log');
+        
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const colorClass = type === 'success' ? 'success' : type === 'error' ? 'error' : '';
+            log.innerHTML += `<span class="${colorClass}">[${timestamp}] ${message}</span>\n`;
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function clearLog() {
+            log.innerHTML = '🚀 Log limpo...\n';
+        }
+
+        async function testBackendConnection() {
+            addLog('🔍 Testando conexão com o backend...');
+            try {
+                const response = await fetch('http://localhost:8080/api/auth/register', {
+                    method: 'OPTIONS'
+                });
+                
+                if (response.status === 200 || response.status === 204) {
+                    addLog('✅ Backend está ativo e acessível!', 'success');
+                } else {
+                    addLog(`⚠️ Backend respondeu com status: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                addLog(`❌ Erro ao conectar com o backend: ${error.message}`, 'error');
+            }
+        }
+
+        async function testUserRegistration() {
+            addLog('📝 Testando cadastro de usuário...');
+            
+            const testUser = {
+                username: `testeweb${Date.now()}`,
+                email: `testeweb${Date.now()}@exemplo.com`,
+                password: 'TesteWeb2024!@#',
+                fullName: 'Teste Web Usuário',
+                userType: 'TUTOR',
+                securityQuestion1: 'Qual é o nome do seu primeiro animal de estimação?',
+                securityAnswer1: 'Rex',
+                securityQuestion2: 'Em que cidade você nasceu?',
+                securityAnswer2: 'São Paulo',
+                securityQuestion3: 'Qual é o nome da sua mãe?',
+                securityAnswer3: 'Maria'
+            };
+
+            try {
+                addLog(`👤 Criando usuário: ${testUser.username} (${testUser.email})`);
+                
+                const response = await fetch('http://localhost:8080/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(testUser)
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    addLog('✅ Usuário cadastrado com sucesso!', 'success');
+                    addLog(`🔑 Token recebido: ${result.data.accessToken.substring(0, 50)}...`);
+                    addLog(`👤 ID do usuário: ${result.data.user.id}`);
+                    addLog(`📧 Email (criptografado): ${result.data.user.email.substring(0, 30)}...`);
+                    
+                    // Salvar dados para teste de login
+                    window.lastRegisteredUser = {
+                        username: testUser.username,
+                        email: testUser.email,
+                        password: testUser.password,
+                        tokens: result.data
+                    };
+                    
+                    addLog('💾 Dados salvos para teste de login');
+                } else {
+                    addLog(`❌ Erro no cadastro: ${JSON.stringify(result)}`, 'error');
+                }
+            } catch (error) {
+                addLog(`❌ Erro na requisição de cadastro: ${error.message}`, 'error');
+            }
+        }
+
+        async function testUserLogin() {
+            if (!window.lastRegisteredUser) {
+                addLog('⚠️ Execute primeiro o teste de cadastro para gerar um usuário válido', 'error');
+                return;
+            }
+
+            addLog('🔐 Testando login com usuário recém-cadastrado...');
+            
+            const { email, password } = window.lastRegisteredUser;
+            
+            try {
+                addLog(`🔍 Tentando login com email: ${email}`);
+                
+                const response = await fetch('http://localhost:8080/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        password: password
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    addLog('✅ Login realizado com sucesso!', 'success');
+                    addLog(`🔑 Token de acesso recebido: ${result.data.accessToken.substring(0, 50)}...`);
+                } else {
+                    addLog(`❌ Erro no login: ${result.message || JSON.stringify(result)}`, 'error');
+                    addLog('💡 Isso pode ser devido à criptografia do email no banco de dados');
+                }
+            } catch (error) {
+                addLog(`❌ Erro na requisição de login: ${error.message}`, 'error');
+            }
+        }
+
+        // Teste inicial
+        window.onload = function() {
+            addLog('🎯 Sistema Pet Connect - Teste de Integração Frontend/Backend');
+            addLog('📋 Execute os testes na ordem para validar o fluxo completo');
+            testBackendConnection();
+        };
+    </script>
+</body>
+</html>

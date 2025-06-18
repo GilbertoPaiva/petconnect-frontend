@@ -7,24 +7,27 @@ export function middleware(request: NextRequest) {
   // Rotas que não precisam de autenticação
   const publicRoutes = ['/', '/login', '/register', '/forgot-password'];
   
-  // Verificar se é uma rota pública
-  if (publicRoutes.includes(pathname)) {
+  // Rotas protegidas por tipo de usuário
+  const protectedRoutes = {
+    admin: ['/admin'],
+    veterinario: ['/veterinario'],
+    lojista: ['/lojista'],
+    tutor: ['/tutor']
+  };
+
+  // Se é uma rota pública, permite acesso
+  if (publicRoutes.some(route => pathname === route || pathname.startsWith(route))) {
     return NextResponse.next();
   }
 
-  // Para rotas protegidas, verificar se há token no header ou cookies
-  const token = request.headers.get('authorization') || 
-                request.cookies.get('auth-storage')?.value;
+  // Verifica se há token no localStorage (só funciona no client)
+  // Este middleware principalmente serve para redirecionamento inicial
+  const token = request.cookies.get('pet-connect-token')?.value || 
+                request.headers.get('authorization')?.replace('Bearer ', '');
 
-  // Se não há token, redirecionar para login
-  if (!token && pathname.startsWith('/admin') || 
-      pathname.startsWith('/tutor') || 
-      pathname.startsWith('/veterinario') || 
-      pathname.startsWith('/lojista')) {
-    
-    const loginUrl = new URL('/login', request.url);
-    loginUrl.searchParams.set('redirect', pathname);
-    return NextResponse.redirect(loginUrl);
+  // Se não há token e está tentando acessar rota protegida
+  if (!token && Object.values(protectedRoutes).flat().some(route => pathname.startsWith(route))) {
+    return NextResponse.redirect(new URL('/login', request.url));
   }
 
   return NextResponse.next();
