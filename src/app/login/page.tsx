@@ -11,7 +11,7 @@ import { useAuthStore } from '@/application/stores/useAuthStore';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, setLoading, isLoading } = useAuthStore();
+  const { login, isLoading } = useAuthStore();
   
   const [formData, setFormData] = useState({
     email: '',
@@ -23,52 +23,33 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setLoading(true);
 
     try {
-      // TODO: Implementar chamada real para API
-      // const response = await apiService.post('/api/auth/login', formData);
+      await login(formData);
       
-      // Mock de login para demonstração
-      if (formData.email && formData.password) {
-        const mockUser = {
-          id: '1',
-          email: formData.email,
-          username: formData.email.split('@')[0],
-          fullName: 'Usuário Teste',
-          userType: 'TUTOR' as const,
-          active: true,
-          roles: ['USER'],
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-        
-        login(mockUser, 'mock-token');
-        
-        // Redirecionar baseado no tipo de usuário
-        switch (mockUser.userType) {
-          case 'ADMIN':
-            router.push('/admin/dashboard');
-            break;
-          case 'LOJISTA':
-            router.push('/lojista/dashboard');
-            break;
-          case 'VETERINARIO':
-            router.push('/veterinario/dashboard');
-            break;
-          case 'TUTOR':
-            router.push('/tutor/dashboard');
-            break;
-          default:
-            router.push('/dashboard');
-        }
-      } else {
-        setError('Email e senha são obrigatórios');
+      // Redirecionar baseado no tipo de usuário será feito no store
+      // Por enquanto, vamos usar mock para mostrar funcionalidade
+      const mockUserType = formData.email.includes('admin') ? 'ADMIN' : 
+                          formData.email.includes('vet') ? 'VETERINARIO' :
+                          formData.email.includes('loja') ? 'LOJISTA' : 'TUTOR';
+      
+      switch (mockUserType) {
+        case 'ADMIN':
+          router.push('/admin/dashboard');
+          break;
+        case 'VETERINARIO':
+          router.push('/veterinario/dashboard');
+          break;
+        case 'LOJISTA':
+          router.push('/lojista/dashboard');
+          break;
+        case 'TUTOR':
+        default:
+          router.push('/tutor/dashboard');
+          break;
       }
     } catch (err: any) {
-      setError(err.message || 'Erro ao fazer login');
-    } finally {
-      setLoading(false);
+      setError(err.message || 'Erro ao fazer login. Verifique suas credenciais.');
     }
   };
 

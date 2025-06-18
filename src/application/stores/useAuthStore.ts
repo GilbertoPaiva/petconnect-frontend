@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { User } from '@/domain/entities/User';
+import { User, LoginRequest, RegisterRequest, AuthResponse } from '@/domain/types';
+import { authService } from '@/infrastructure/api/services';
 import { STORAGE_KEYS } from '@/shared/constants/api';
 
 interface AuthState {
@@ -11,10 +12,12 @@ interface AuthState {
 }
 
 interface AuthActions {
-  login: (user: User, token?: string) => void;
+  login: (loginData: LoginRequest) => Promise<void>;
+  register: (registerData: RegisterRequest) => Promise<void>;
   logout: () => void;
   updateUser: (user: Partial<User>) => void;
   setLoading: (loading: boolean) => void;
+  refreshToken: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState & AuthActions>()(
@@ -27,16 +30,43 @@ export const useAuthStore = create<AuthState & AuthActions>()(
       isLoading: false,
 
       // Actions
-      login: (user: User, token?: string) => {
-        set({
-          user,
-          token,
-          isAuthenticated: true,
-          isLoading: false,
-        });
-        
-        if (token) {
-          localStorage.setItem(STORAGE_KEYS.TOKEN, token);
+      login: async (loginData: LoginRequest) => {
+        try {
+          set({ isLoading: true });
+          const response: AuthResponse = await authService.login(loginData);
+          
+          set({
+            user: response.user as User,
+            token: response.accessToken,
+            isAuthenticated: true,
+            isLoading: false,
+          });
+
+          localStorage.setItem(STORAGE_KEYS.TOKEN, response.accessToken);
+          localStorage.setItem('refreshToken', response.refreshToken);
+        } catch (error) {
+          set({ isLoading: false });
+          throw error;
+        }
+      },
+
+      register: async (registerData: RegisterRequest) => {
+        try {
+          set({ isLoading: true });
+          const response: AuthResponse = await authService.register(registerData);
+          
+          set({
+            user: response.user as User,
+            token: response.accessToken,
+            isAuthenticated: true,
+            isLoading: false,
+          });
+
+          localStorage.setItem(STORAGE_KEYS.TOKEN, response.accessToken);
+          localStorage.setItem('refreshToken', response.refreshToken);
+        } catch (error) {
+          set({ isLoading: false });
+          throw error;
         }
       },
 
@@ -50,6 +80,7 @@ export const useAuthStore = create<AuthState & AuthActions>()(
         
         localStorage.removeItem(STORAGE_KEYS.TOKEN);
         localStorage.removeItem(STORAGE_KEYS.USER);
+        localStorage.removeItem('refreshToken');
       },
 
       updateUser: (userData: Partial<User>) => {
@@ -63,6 +94,30 @@ export const useAuthStore = create<AuthState & AuthActions>()(
 
       setLoading: (loading: boolean) => {
         set({ isLoading: loading });
+      },
+
+      refreshToken: async () => {
+        try {
+          const refreshToken = localStorage.getItem('refreshToken');
+          if (!refreshToken) {
+            throw new Error('No refresh token available');
+          }
+
+          const response: AuthResponse = await authService.refreshToken(refreshToken);
+          
+          set({
+            user: response.user as User,
+            token: response.accessToken,
+            isAuthenticated: true,
+          });
+
+          localStorage.setItem(STORAGE_KEYS.TOKEN, response.accessToken);
+          localStorage.setItem('refreshToken', response.refreshToken);
+        } catch (error) {
+          // Se falhar, fazer logout
+          get().logout();
+          throw error;
+        }
       },
     }),
     {
